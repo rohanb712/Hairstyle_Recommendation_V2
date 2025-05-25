@@ -1,0 +1,82 @@
+[
+  {
+    "id": "classic_fade",
+    "name": "Classic Fade",
+    "description": "A timeless men's cut with short sides that gradually fade into longer hair on top. Professional and versatile for any occasion.",
+    "image_url": "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400",
+    "suitable_face_shapes": ["Oval", "Round", "Square"],
+    "generation_prompt_modifier": "with a classic fade haircut, short sides, well-groomed men's hairstyle, professional appearance"
+  },
+  {
+    "id": "undercut",
+    "name": "Modern Undercut",
+    "description": "Bold and edgy style with very short or shaved sides and longer hair on top. Perfect for making a statement.",
+    "image_url": "https://images.unsplash.com/photo-1582095133179-bfd08e2fc6b3?w=400",
+    "suitable_face_shapes": ["Oval", "Square", "Heart"],
+    "generation_prompt_modifier": "with a modern undercut hairstyle, shaved sides, longer top, edgy men's cut"
+  },
+  {
+    "id": "crew_cut",
+    "name": "Crew Cut",
+    "description": "Short, practical military-inspired cut that's easy to maintain. Great for active lifestyles and professional settings.",
+    "image_url": "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400",
+    "suitable_face_shapes": ["Oval", "Square", "Round"],
+    "generation_prompt_modifier": "with a crew cut hairstyle, short military style, neat and professional men's haircut"
+  },
+  {
+    "id": "pompadour",
+    "name": "Modern Pompadour",
+    "description": "Stylish retro-inspired look with volume on top and shorter sides. Perfect for special occasions and formal events.",
+    "image_url": "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400",
+    "suitable_face_shapes": ["Oval", "Long", "Heart"],
+    "generation_prompt_modifier": "with a modern pompadour hairstyle, voluminous top, slicked back style, sophisticated men's cut"
+  },
+  {
+    "id": "buzz_cut",
+    "name": "Buzz Cut",
+    "description": "Ultra-short, low-maintenance cut that's perfect for hot weather and athletic activities. Clean and masculine look.",
+    "image_url": "https://images.unsplash.com/photo-1582095133179-bfd08e2fc6b3?w=400",
+    "suitable_face_shapes": ["Oval", "Square", "Round"],
+    "generation_prompt_modifier": "with a buzz cut hairstyle, very short hair, clean masculine look, military style"
+  },
+  {
+    "id": "quiff",
+    "name": "Classic Quiff",
+    "description": "Textured style with height and volume at the front. Combines vintage charm with modern edge.",
+    "image_url": "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400",
+    "suitable_face_shapes": ["Oval", "Round", "Long"],
+    "generation_prompt_modifier": "with a classic quiff hairstyle, textured front volume, modern men's styling"
+  },
+  {
+    "id": "side_part",
+    "name": "Classic Side Part",
+    "description": "Traditional gentlemen's cut with a clean side part. Timeless, professional, and always in style.",
+    "image_url": "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400",
+    "suitable_face_shapes": ["Oval", "Square", "Heart"],
+    "generation_prompt_modifier": "with a classic side part hairstyle, gentlemen's cut, professional business style"
+  },
+  {
+    "id": "textured_crop",
+    "name": "Textured Crop",
+    "description": "Modern short cut with textured, messy styling on top. Casual yet put-together appearance.",
+    "image_url": "https://images.unsplash.com/photo-1582095133179-bfd08e2fc6b3?w=400",
+    "suitable_face_shapes": ["Oval", "Round", "Square"],
+    "generation_prompt_modifier": "with a textured crop hairstyle, messy textured top, modern casual men's cut"
+  },
+  {
+    "id": "slick_back",
+    "name": "Slicked Back",
+    "description": "Sophisticated style with hair combed straight back. Perfect for formal events and business settings.",
+    "image_url": "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400",
+    "suitable_face_shapes": ["Oval", "Heart", "Long"],
+    "generation_prompt_modifier": "with slicked back hair, formal styling, sophisticated men's hairstyle, business professional"
+  },
+  {
+    "id": "caesar_cut",
+    "name": "Caesar Cut",
+    "description": "Short cut with forward-combed fringe. Low maintenance and perfect for men with receding hairlines.",
+    "image_url": "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400",
+    "suitable_face_shapes": ["Round", "Square", "Long"],
+    "generation_prompt_modifier": "with a caesar cut hairstyle, forward fringe, classic Roman style men's haircut"
+  }
+] 
