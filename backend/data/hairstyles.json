@@ -1,10 +1,56 @@
 [
   {
+    "id": "pixie_cut",
+    "name": "Pixie Cut",
+    "description": "A short, cropped hairstyle that's chic and low-maintenance. Perfect for highlighting facial features and works well for both face shapes.",
+    "image_url": "https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=400",
+    "suitable_face_shapes": ["oval", "heart", "square"],
+    "gender": "female",
+    "generation_prompt_modifier": "with a stylish short pixie cut hairstyle, cropped hair, modern and chic"
+  },
+  {
+    "id": "bob_cut",
+    "name": "Classic Bob",
+    "description": "A timeless bob that falls between the chin and shoulders. Versatile and elegant for professional and casual settings.",
+    "image_url": "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400",
+    "suitable_face_shapes": ["oval", "round", "square", "long"],
+    "gender": "female",
+    "generation_prompt_modifier": "with a classic bob haircut, shoulder-length hair, sleek and professional"
+  },
+  {
+    "id": "long_layers",
+    "name": "Long Layered Hair",
+    "description": "Long hair with layers that add volume and movement. Great for creating dimension and softening angular features.",
+    "image_url": "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=400",
+    "suitable_face_shapes": ["long", "round", "square", "heart"],
+    "gender": "female",
+    "generation_prompt_modifier": "with long layered hair, flowing layers, voluminous and bouncy"
+  },
+  {
+    "id": "side_swept_bangs",
+    "name": "Side-Swept Bangs",
+    "description": "Soft, side-swept bangs that frame the face beautifully. Can be paired with various lengths to balance face proportions.",
+    "image_url": "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400",
+    "suitable_face_shapes": ["heart", "long", "square"],
+    "gender": "female",
+    "generation_prompt_modifier": "with side-swept bangs, soft fringe, face-framing layers"
+  },
+  {
+    "id": "beach_waves",
+    "name": "Beach Waves",
+    "description": "Relaxed, tousled waves that give a natural, effortless look. Perfect for a casual style and adds texture.",
+    "image_url": "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=400",
+    "suitable_face_shapes": ["oval", "round", "heart", "square"],
+    "gender": "female",
+    "generation_prompt_modifier": "with beachy waves, tousled hair, natural wavy texture, effortless style"
+  },
+  {
     "id": "classic_fade",
     "name": "Classic Fade",
     "description": "A timeless men's cut with short sides that gradually fade into longer hair on top. Professional and versatile for any occasion.",
     "image_url": "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400",
-    "suitable_face_shapes": ["Oval", "Round", "Square"],
+    "suitable_face_shapes": ["oval", "round", "square"],
+    "gender": "male",
     "generation_prompt_modifier": "with a classic fade haircut, short sides, well-groomed men's hairstyle, professional appearance"
   },
   {
@@ -12,7 +58,8 @@
     "name": "Modern Undercut",
     "description": "Bold and edgy style with very short or shaved sides and longer hair on top. Perfect for making a statement.",
     "image_url": "https://images.unsplash.com/photo-1582095133179-bfd08e2fc6b3?w=400",
-    "suitable_face_shapes": ["Oval", "Square", "Heart"],
+    "suitable_face_shapes": ["oval", "square", "heart"],
+    "gender": "male",
     "generation_prompt_modifier": "with a modern undercut hairstyle, shaved sides, longer top, edgy men's cut"
   },
   {
@@ -20,15 +67,17 @@
     "name": "Crew Cut",
     "description": "Short, practical military-inspired cut that's easy to maintain. Great for active lifestyles and professional settings.",
     "image_url": "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400",
-    "suitable_face_shapes": ["Oval", "Square", "Round"],
+    "suitable_face_shapes": ["oval", "square", "round"],
+    "gender": "male",
     "generation_prompt_modifier": "with a crew cut hairstyle, short military style, neat and professional men's haircut"
   },
   {
     "id": "pompadour",
     "name": "Modern Pompadour",
-    "description": "Stylish retro-inspired look with volume on top and shorter sides. Perfect for special occasions and formal events.",
+    "description": "Stylish retro-inspired look with volume on top and shorter sides. Perfect for special occasions and adds height to longer faces.",
     "image_url": "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400",
-    "suitable_face_shapes": ["Oval", "Long", "Heart"],
+    "suitable_face_shapes": ["oval", "long", "heart"],
+    "gender": "male",
     "generation_prompt_modifier": "with a modern pompadour hairstyle, voluminous top, slicked back style, sophisticated men's cut"
   },
   {
@@ -36,47 +85,53 @@
     "name": "Buzz Cut",
     "description": "Ultra-short, low-maintenance cut that's perfect for hot weather and athletic activities. Clean and masculine look.",
     "image_url": "https://images.unsplash.com/photo-1582095133179-bfd08e2fc6b3?w=400",
-    "suitable_face_shapes": ["Oval", "Square", "Round"],
+    "suitable_face_shapes": ["oval", "square", "round"],
+    "gender": "male",
     "generation_prompt_modifier": "with a buzz cut hairstyle, very short hair, clean masculine look, military style"
   },
   {
     "id": "quiff",
     "name": "Classic Quiff",
-    "description": "Textured style with height and volume at the front. Combines vintage charm with modern edge.",
+    "description": "Textured style with height and volume at the front. Combines vintage charm with modern edge and works well for most face shapes.",
     "image_url": "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400",
-    "suitable_face_shapes": ["Oval", "Round", "Long"],
+    "suitable_face_shapes": ["oval", "round", "long"],
+    "gender": "male",
     "generation_prompt_modifier": "with a classic quiff hairstyle, textured front volume, modern men's styling"
   },
   {
-    "id": "side_part",
-    "name": "Classic Side Part",
-    "description": "Traditional gentlemen's cut with a clean side part. Timeless, professional, and always in style.",
+    "id": "lob_cut",
+    "name": "Long Bob (Lob)",
+    "description": "A longer version of the classic bob, hitting just above the shoulders. Sophisticated and versatile for professional settings.",
     "image_url": "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400",
-    "suitable_face_shapes": ["Oval", "Square", "Heart"],
-    "generation_prompt_modifier": "with a classic side part hairstyle, gentlemen's cut, professional business style"
+    "suitable_face_shapes": ["oval", "round", "heart", "long"],
+    "gender": "female",
+    "generation_prompt_modifier": "with a long bob haircut, shoulder-length hair, sleek and modern styling"
   },
   {
     "id": "textured_crop",
     "name": "Textured Crop",
-    "description": "Modern short cut with textured, messy styling on top. Casual yet put-together appearance.",
+    "description": "Modern short cut with textured, messy styling on top. Casual yet put-together appearance that works great for square and round faces.",
     "image_url": "https://images.unsplash.com/photo-1582095133179-bfd08e2fc6b3?w=400",
-    "suitable_face_shapes": ["Oval", "Round", "Square"],
+    "suitable_face_shapes": ["oval", "round", "square"],
+    "gender": "male",
     "generation_prompt_modifier": "with a textured crop hairstyle, messy textured top, modern casual men's cut"
+  },
+  {
+    "id": "curtain_bangs",
+    "name": "Curtain Bangs",
+    "description": "Face-framing bangs that part in the middle and sweep to both sides. Perfect for heart and long face shapes.",
+    "image_url": "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400",
+    "suitable_face_shapes": ["heart", "long", "oval"],
+    "gender": "female",
+    "generation_prompt_modifier": "with curtain bangs, center-parted fringe, face-framing layers"
   },
   {
     "id": "slick_back",
     "name": "Slicked Back",
-    "description": "Sophisticated style with hair combed straight back. Perfect for formal events and business settings.",
+    "description": "Sophisticated style with hair combed straight back. Perfect for formal events and business settings, adds length to round faces.",
     "image_url": "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400",
-    "suitable_face_shapes": ["Oval", "Heart", "Long"],
+    "suitable_face_shapes": ["oval", "heart", "long", "round"],
+    "gender": "male",
     "generation_prompt_modifier": "with slicked back hair, formal styling, sophisticated men's hairstyle, business professional"
-  },
-  {
-    "id": "caesar_cut",
-    "name": "Caesar Cut",
-    "description": "Short cut with forward-combed fringe. Low maintenance and perfect for men with receding hairlines.",
-    "image_url": "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400",
-    "suitable_face_shapes": ["Round", "Square", "Long"],
-    "generation_prompt_modifier": "with a caesar cut hairstyle, forward fringe, classic Roman style men's haircut"
   }
 ] 
