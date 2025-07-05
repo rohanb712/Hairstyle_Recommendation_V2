@@ -1,15 +1,11 @@
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
+import torchvision.models as models
 import numpy as np
 import cv2
 from typing import Tuple, Optional
 from PIL import Image
-import tensorflow as tf
-from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D
-from tensorflow.keras.applications.vgg16 import VGG16
-from tensorflow.keras.preprocessing import image
 import os
 from pathlib import Path
 
@@ -21,15 +17,58 @@ except ImportError:
     MTCNN_AVAILABLE = False
     print("MTCNN not available. Install with: pip install mtcnn")
 
-class VGGFaceShapeClassifier:
+class VGGFaceShapeClassifier(nn.Module):
     """
     Face shape classifier using VGG16 transfer learning approach
-    Based on the proven workflow from the example notebooks
+    Based on the proven workflow from the example notebooks, now using PyTorch
+    """
+    
+    def __init__(self, num_classes=5):
+        super(VGGFaceShapeClassifier, self).__init__()
+        
+        # Load pretrained VGG16
+        self.vgg16 = models.vgg16(pretrained=True)
+        
+        # Freeze all layers except the last few
+        for param in self.vgg16.parameters():
+            param.requires_grad = False
+        
+        # Unfreeze the last 4 layers for fine-tuning
+        for param in self.vgg16.classifier[-4:].parameters():
+            param.requires_grad = True
+        
+        # Replace the classifier to match our architecture
+        self.vgg16.classifier = nn.Sequential(
+            nn.Linear(25088, 4096),
+            nn.ReLU(True),
+            nn.Dropout(0.5),
+            nn.Linear(4096, 512),
+            nn.ReLU(True),
+            nn.Dropout(0.5),
+            nn.Linear(512, 256),
+            nn.ReLU(True),
+            nn.Dropout(0.3),
+            nn.Linear(256, num_classes)
+        )
+        
+        # Initialize the new layers
+        for module in self.vgg16.classifier:
+            if isinstance(module, nn.Linear):
+                nn.init.xavier_uniform_(module.weight)
+                nn.init.constant_(module.bias, 0)
+    
+    def forward(self, x):
+        return self.vgg16(x)
+
+class VGGFaceShapeClassifierWrapper:
+    """
+    Wrapper class for the PyTorch VGG face shape classifier
+    Maintains the same interface as the original TensorFlow version
     """
     
     def __init__(self, model_path: Optional[str] = None):
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.model = None
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.model = VGGFaceShapeClassifier(num_classes=5).to(self.device)
         self.face_detector = None
         
         # Face shape labels matching the example workflow
@@ -40,62 +79,42 @@ class VGGFaceShapeClassifier:
         if MTCNN_AVAILABLE:
             self.face_detector = MTCNN()
         
-        # Load or create model
+        # Image preprocessing transforms
+        self.transform = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
+        
+        # Load model if path provided
         if model_path and os.path.exists(model_path):
             self.load_model(model_path)
         else:
-            self.create_model()
-    
-    def create_model(self):
-        """
-        Create VGG16-based model with transfer learning
-        Following the architecture from the example notebooks
-        """
-        # Create base VGG16 model
-        base_model = VGG16(
-            weights='imagenet',  # Use ImageNet weights initially
-            include_top=False,
-            input_shape=(224, 224, 3)
-        )
-        
-        # Freeze base layers
-        for layer in base_model.layers[:-4]:  # Freeze all but last 4 layers
-            layer.trainable = False
-        
-        # Create model
-        self.model = Sequential([
-            base_model,
-            GlobalAveragePooling2D(),
-            Dense(512, activation='relu'),
-            Dropout(0.5),
-            Dense(256, activation='relu'),
-            Dropout(0.3),
-            Dense(len(self.face_shapes), activation='softmax')
-        ])
-        
-        # Compile model
-        self.model.compile(
-            optimizer='adam',
-            loss='categorical_crossentropy',
-            metrics=['accuracy']
-        )
-        
-        print("VGG16 face shape classifier created")
+            print("VGG16 face shape classifier created (PyTorch)")
     
     def load_model(self, model_path: str):
         """Load a saved model"""
         try:
-            self.model = load_model(model_path)
+            checkpoint = torch.load(model_path, map_location=self.device)
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+            self.model.eval()
             print(f"Model loaded from {model_path}")
         except Exception as e:
             print(f"Error loading model: {e}")
-            self.create_model()
+            print("Using untrained model")
     
     def save_model(self, model_path: str):
         """Save the current model"""
-        if self.model:
-            self.model.save(model_path)
+        try:
+            torch.save({
+                'model_state_dict': self.model.state_dict(),
+                'face_shapes': self.face_shapes,
+                'label_dict': self.label_dict
+            }, model_path)
             print(f"Model saved to {model_path}")
+        except Exception as e:
+            print(f"Error saving model: {e}")
     
     def crop_and_resize(self, image: np.ndarray, target_w: int = 224, target_h: int = 224) -> np.ndarray:
         """
@@ -186,9 +205,6 @@ class VGGFaceShapeClassifier:
             Tuple of (face_shape, confidence)
         """
         try:
-            if self.model is None:
-                return "Oval", 0.5  # Default fallback
-            
             # Extract and preprocess face
             face_extracted = self.extract_face(face_image)
             
@@ -200,22 +216,22 @@ class VGGFaceShapeClassifier:
                 # Convert BGR to RGB
                 processed_face = cv2.cvtColor(face_extracted, cv2.COLOR_BGR2RGB)
             
-            # Normalize to 0-1 range
-            processed_face = processed_face.astype(np.float32) / 255.0
-            
-            # Reshape for model input
-            model_input = np.expand_dims(processed_face, axis=0)
+            # Apply transforms
+            input_tensor = self.transform(processed_face).unsqueeze(0).to(self.device)
             
             # Make prediction
-            predictions = self.model.predict(model_input, verbose=0)
+            self.model.eval()
+            with torch.no_grad():
+                outputs = self.model(input_tensor)
+                probabilities = torch.nn.functional.softmax(outputs, dim=1)
+                
+                # Get predicted class and confidence
+                confidence, predicted_class = torch.max(probabilities, 1)
+                
+                face_shape = self.label_dict[predicted_class.item()]
+                confidence_score = confidence.item()
             
-            # Get predicted class and confidence
-            predicted_class = np.argmax(predictions[0])
-            confidence = float(np.max(predictions[0]))
-            
-            face_shape = self.label_dict[predicted_class]
-            
-            return face_shape, confidence
+            return face_shape, confidence_score
             
         except Exception as e:
             print(f"Error classifying face: {e}")
@@ -225,23 +241,23 @@ class VGGFaceShapeClassifier:
 class FaceClassifier:
     """
     Wrapper class to maintain compatibility with existing code
-    while using the new VGG-based classifier
+    while using the new PyTorch-based classifier
     """
     
     def __init__(self):
-        # Initialize the VGG-based classifier
+        # Initialize the PyTorch-based classifier
         models_dir = Path("backend/data/face_shapes/models")
         models_dir.mkdir(parents=True, exist_ok=True)
         
-        model_path = models_dir / "face_shape_classifier.h5"
-        self.classifier = VGGFaceShapeClassifier(
+        model_path = models_dir / "face_shape_classifier.pth"
+        self.classifier = VGGFaceShapeClassifierWrapper(
             model_path=str(model_path) if model_path.exists() else None
         )
         
         # Map new labels to original format for compatibility
         self.shape_mapping = {
             'Heart': 'heart',
-            'Oblong': 'long',  # Map oblong to long
+            'Oblong': 'oblong',  # Keep oblong as oblong
             'Oval': 'oval',
             'Round': 'round',
             'Square': 'square'
@@ -273,10 +289,10 @@ class FaceClassifier:
         """Save the trained model"""
         if model_path is None:
             models_dir = Path("backend/data/face_shapes/models")
-            model_path = models_dir / "face_shape_classifier.h5"
+            model_path = models_dir / "face_shape_classifier.pth"
         
         self.classifier.save_model(str(model_path))
     
     def get_training_ready_classifier(self):
-        """Get the underlying VGG classifier for training"""
+        """Get the underlying PyTorch classifier for training"""
         return self.classifier 

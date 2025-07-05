@@ -12,6 +12,7 @@ Requirements:
     - Dataset organized in backend/data/face_shapes/raw/{shape}/
     - At least 200+ images per face shape for reasonable performance
     - MTCNN installed for face detection during training
+    - PyTorch and torchvision installed
 """
 
 import sys
@@ -27,7 +28,7 @@ from services.model_trainer import FaceShapeTrainer
 def check_dataset_structure(data_dir: Path):
     """Check if the dataset is properly organized"""
     raw_dir = data_dir / "raw"
-    required_shapes = ['heart', 'long', 'oval', 'round', 'square']
+    required_shapes = ['heart', 'oblong', 'oval', 'round', 'square']
     
     print("Checking dataset structure...")
     
@@ -35,12 +36,29 @@ def check_dataset_structure(data_dir: Path):
         print(f"❌ Error: {raw_dir} directory not found!")
         print("Please create the directory structure and add your images:")
         for shape in required_shapes:
-            print(f"   backend/data/face_shapes/raw/{shape}/")
+            print(f"   backend/data/face_shapes/raw/train/{shape}/")
+            print(f"   backend/data/face_shapes/raw/test/{shape}/")
+        return False
+    
+    # Check for train/test directory structure
+    train_dir = raw_dir / "train"
+    test_dir = raw_dir / "test"
+    
+    if not train_dir.exists() or not test_dir.exists():
+        print(f"❌ Error: Expected train/test directory structure not found!")
+        print("Please organize your data as:")
+        for shape in required_shapes:
+            print(f"   backend/data/face_shapes/raw/train/{shape}/")
+            print(f"   backend/data/face_shapes/raw/test/{shape}/")
         return False
     
     total_images = 0
+    train_images = 0
+    test_images = 0
+    
+    print("\nTraining data:")
     for shape in required_shapes:
-        shape_dir = raw_dir / shape
+        shape_dir = train_dir / shape
         if not shape_dir.exists():
             print(f"❌ Warning: {shape_dir} directory not found!")
             continue
@@ -48,7 +66,7 @@ def check_dataset_structure(data_dir: Path):
         # Count image files
         image_files = list(shape_dir.glob("*.jpg")) + list(shape_dir.glob("*.png"))
         image_count = len(image_files)
-        total_images += image_count
+        train_images += image_count
         
         status = "✅" if image_count >= 100 else "⚠️" if image_count >= 50 else "❌"
         print(f"{status} {shape}: {image_count} images")
@@ -56,7 +74,23 @@ def check_dataset_structure(data_dir: Path):
         if image_count < 50:
             print(f"   Recommendation: Add more images for better performance")
     
-    print(f"\nTotal images: {total_images}")
+    print("\nTest data:")
+    for shape in required_shapes:
+        shape_dir = test_dir / shape
+        if not shape_dir.exists():
+            print(f"❌ Warning: {shape_dir} directory not found!")
+            continue
+        
+        # Count image files
+        image_files = list(shape_dir.glob("*.jpg")) + list(shape_dir.glob("*.png"))
+        image_count = len(image_files)
+        test_images += image_count
+        
+        status = "✅" if image_count >= 20 else "⚠️" if image_count >= 10 else "❌"
+        print(f"{status} {shape}: {image_count} images")
+    
+    total_images = train_images + test_images
+    print(f"\nTotal images: {total_images} (Train: {train_images}, Test: {test_images})")
     
     if total_images < 250:
         print("❌ Error: Not enough training data!")
@@ -67,7 +101,7 @@ def check_dataset_structure(data_dir: Path):
 
 def main():
     print("="*60)
-    print("🎯 FACE SHAPE CLASSIFICATION MODEL TRAINING")
+    print("🎯 FACE SHAPE CLASSIFICATION MODEL TRAINING (PyTorch)")
     print("="*60)
     
     # Check dataset
@@ -90,6 +124,8 @@ def main():
     
     # Ask for confirmation
     print(f"\n📋 Training Configuration:")
+    print(f"   • Framework: PyTorch")
+    print(f"   • Device: {trainer.device}")
     print(f"   • Input size: 224×224 RGB images")
     print(f"   • Architecture: VGG16 transfer learning") 
     print(f"   • Face shapes: Heart, Oblong, Oval, Round, Square")
@@ -122,7 +158,7 @@ def main():
                 print("   • Checking image quality")
                 print("   • Ensuring proper face visibility in images")
             
-            print(f"\n📁 Model saved to: backend/data/face_shapes/models/face_shape_classifier.h5")
+            print(f"\n📁 Model saved to: backend/data/face_shapes/models/face_shape_classifier.pth")
             print("🔄 The system will now automatically use this trained model!")
             
         else:
