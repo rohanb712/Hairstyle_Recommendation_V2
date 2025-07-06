@@ -58,11 +58,11 @@ class FaceShapeTrainer:
         self.class_labels = ['Heart', 'Oblong', 'Oval', 'Round', 'Square']
         self.num_classes = len(self.face_shapes)
         
-        # Training parameters
+        # Training parameters - improved for better performance
         self.img_size = (224, 224)
-        self.batch_size = 32
-        self.epochs = 50
-        self.learning_rate = 0.001
+        self.batch_size = 16  # Reduced for better gradient updates
+        self.epochs = 100     # Increased for more training
+        self.learning_rate = 0.0001  # Reduced learning rate
         
         # Device configuration
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -84,12 +84,13 @@ class FaceShapeTrainer:
         # Create directories
         self.models_dir.mkdir(parents=True, exist_ok=True)
         
-        # Data transforms
+        # Data transforms - improved
         self.train_transform = transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize((224, 224)),
-            transforms.RandomRotation(20),
+            transforms.RandomRotation(15),     # Reduced rotation
             transforms.RandomHorizontalFlip(),
+            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  # Added color jitter
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
@@ -124,23 +125,19 @@ class FaceShapeTrainer:
                 image_files = list(shape_dir.glob("*.jpg")) + list(shape_dir.glob("*.png"))
                 
                 print(f"Loading {len(image_files)} training images for {shape} face shape")
+                loaded_count = 0
                 
                 for img_path in image_files:
                     try:
-                        # Handle Unicode filenames by using numpy and cv2 workaround
+                        # Handle Unicode filenames properly
                         img_path_str = str(img_path)
                         
-                        # Try to read the image
-                        img = cv2.imread(img_path_str)
-                        if img is None:
-                            # Try alternative method for Unicode filenames
-                            try:
-                                img_array = np.fromfile(img_path_str, dtype=np.uint8)
-                                img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-                            except:
-                                continue
+                        # Use numpy to read file with Unicode support
+                        img_array = np.fromfile(img_path_str, dtype=np.uint8)
+                        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
                         
                         if img is None:
+                            print(f"Failed to decode {img_path.name}")
                             continue
                         
                         # Extract face using MTCNN (same as in the notebooks)
@@ -152,10 +149,13 @@ class FaceShapeTrainer:
                         # Store as uint8 for transforms
                         train_images.append(img_rgb)
                         train_labels.append(i)
+                        loaded_count += 1
                         
                     except Exception as e:
-                        print(f"Error loading {img_path}: {e}")
+                        print(f"Error loading {img_path.name}: {e}")
                         continue
+                
+                print(f"  Successfully loaded: {loaded_count}/{len(image_files)} images")
         
         # Load test data
         test_dir = self.raw_dir / "test"
@@ -171,23 +171,19 @@ class FaceShapeTrainer:
                 image_files = list(shape_dir.glob("*.jpg")) + list(shape_dir.glob("*.png"))
                 
                 print(f"Loading {len(image_files)} test images for {shape} face shape")
+                loaded_count = 0
                 
                 for img_path in image_files:
                     try:
-                        # Handle Unicode filenames by using numpy and cv2 workaround
+                        # Handle Unicode filenames properly
                         img_path_str = str(img_path)
                         
-                        # Try to read the image
-                        img = cv2.imread(img_path_str)
-                        if img is None:
-                            # Try alternative method for Unicode filenames
-                            try:
-                                img_array = np.fromfile(img_path_str, dtype=np.uint8)
-                                img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-                            except:
-                                continue
+                        # Use numpy to read file with Unicode support
+                        img_array = np.fromfile(img_path_str, dtype=np.uint8)
+                        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
                         
                         if img is None:
+                            print(f"Failed to decode {img_path.name}")
                             continue
                         
                         # Extract face using MTCNN (same as in the notebooks)
@@ -199,10 +195,13 @@ class FaceShapeTrainer:
                         # Store as uint8 for transforms
                         test_images.append(img_rgb)
                         test_labels.append(i)
+                        loaded_count += 1
                         
                     except Exception as e:
-                        print(f"Error loading {img_path}: {e}")
+                        print(f"Error loading {img_path.name}: {e}")
                         continue
+                
+                print(f"  Successfully loaded: {loaded_count}/{len(image_files)} images")
         
         # Convert to numpy arrays
         X_train = np.array(train_images)
@@ -210,9 +209,20 @@ class FaceShapeTrainer:
         X_test = np.array(test_images)
         y_test = np.array(test_labels)
         
-        print(f"Loaded {len(X_train)} training images and {len(X_test)} test images")
+        print(f"Final loaded: {len(X_train)} training images and {len(X_test)} test images")
         print(f"Training set: {X_train.shape[0]} images")
         print(f"Test set: {X_test.shape[0]} images")
+        
+        # Print class distribution
+        print("\nClass distribution in training set:")
+        for i, shape in enumerate(self.face_shapes):
+            count = np.sum(y_train == i)
+            print(f"  {shape}: {count} images")
+        
+        print("\nClass distribution in test set:")
+        for i, shape in enumerate(self.face_shapes):
+            count = np.sum(y_test == i)
+            print(f"  {shape}: {count} images")
         
         return X_train, X_test, y_train, y_test
     
@@ -293,7 +303,7 @@ class FaceShapeTrainer:
     def train_model(self, X_train: np.ndarray, X_test: np.ndarray, 
                    y_train: np.ndarray, y_test: np.ndarray) -> Dict:
         """
-        Train the model using the exact training approach from the notebooks
+        Train the model using improved training approach
         """
         print("Creating model...")
         self.model = self.create_model()
@@ -303,22 +313,23 @@ class FaceShapeTrainer:
         val_dataset = FaceShapeDataset(X_test, y_test, transform=self.val_transform)
         
         # Create data loaders
-        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
-        val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False)
+        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=0)
+        val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=0)
         
-        # Loss function and optimizer
+        # Loss function and optimizer - improved
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=1e-4)
         
-        # Learning rate scheduler
-        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, factor=0.5)
+        # Learning rate scheduler - improved
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=8, factor=0.5, verbose=True)
         
         # Training loop
         best_val_acc = 0.0
         patience_counter = 0
-        early_stopping_patience = 10
+        early_stopping_patience = 20  # Increased patience
         
         print(f"Starting training for {self.epochs} epochs...")
+        print(f"Training batches: {len(train_loader)}, Validation batches: {len(val_loader)}")
         
         for epoch in range(self.epochs):
             # Training phase
@@ -365,19 +376,20 @@ class FaceShapeTrainer:
             val_loss = val_loss / len(val_loader)
             
             # Store history
-            self.history['train_loss'].append(train_loss)
-            self.history['train_acc'].append(train_acc)
-            self.history['val_loss'].append(val_loss)
-            self.history['val_acc'].append(val_acc)
+            self.history['train_loss'].append(float(train_loss))
+            self.history['train_acc'].append(float(train_acc))
+            self.history['val_loss'].append(float(val_loss))
+            self.history['val_acc'].append(float(val_acc))
             
             # Learning rate scheduling
             scheduler.step(val_loss)
             
-            # Print progress
-            if (epoch + 1) % 5 == 0:
-                print(f'Epoch [{epoch+1}/{self.epochs}] - '
-                      f'Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}% - '
-                      f'Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}%')
+            # Print progress after each epoch
+            current_lr = optimizer.param_groups[0]['lr']
+            print(f'Epoch [{epoch+1}/{self.epochs}] - '
+                  f'Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}% - '
+                  f'Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}% - '
+                  f'LR: {current_lr:.6f}')
             
             # Early stopping and model saving
             if val_acc > best_val_acc:
@@ -390,7 +402,7 @@ class FaceShapeTrainer:
                     'model_state_dict': self.model.state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
                     'epoch': epoch,
-                    'val_acc': val_acc,
+                    'val_acc': float(val_acc),  # Convert to Python float
                     'face_shapes': self.face_shapes,
                     'class_labels': self.class_labels
                 }, model_path)
@@ -405,9 +417,9 @@ class FaceShapeTrainer:
         print(f"Training completed. Best validation accuracy: {best_val_acc:.2f}%")
         
         return {
-            'best_val_accuracy': best_val_acc / 100.0,
-            'final_train_accuracy': train_acc / 100.0,
-            'epochs_trained': epoch + 1,
+            'best_val_accuracy': float(best_val_acc / 100.0),
+            'final_train_accuracy': float(train_acc / 100.0),
+            'epochs_trained': int(epoch + 1),
             'history': self.history
         }
     
@@ -478,6 +490,10 @@ class FaceShapeTrainer:
                 print("No training data found!")
                 return {}
             
+            # Check for class imbalance
+            unique, counts = np.unique(y_train, return_counts=True)
+            print(f"\nTraining class distribution: {dict(zip(unique, counts))}")
+            
             # Train model
             training_results = self.train_model(X_train, X_test, y_train, y_test)
             
@@ -487,14 +503,22 @@ class FaceShapeTrainer:
             # Combine results
             results = {**training_results, **evaluation_results}
             
-            # Save training history
+            # Save training history with proper JSON serialization
             history_path = self.models_dir / "training_history.json"
             with open(history_path, 'w') as f:
-                # Convert numpy arrays to lists for JSON serialization
+                # Convert all numpy/torch data types to Python native types
                 history_json = {}
                 for key, value in results.items():
                     if isinstance(value, np.ndarray):
                         history_json[key] = value.tolist()
+                    elif isinstance(value, (np.integer, np.floating)):
+                        history_json[key] = value.item()
+                    elif isinstance(value, list):
+                        # Handle lists that might contain numpy types
+                        history_json[key] = [
+                            item.item() if isinstance(item, (np.integer, np.floating)) else item 
+                            for item in value
+                        ]
                     else:
                         history_json[key] = value
                 
@@ -506,6 +530,8 @@ class FaceShapeTrainer:
             
         except Exception as e:
             print(f"Training pipeline error: {e}")
+            import traceback
+            traceback.print_exc()
             return {}
 
 # Example usage

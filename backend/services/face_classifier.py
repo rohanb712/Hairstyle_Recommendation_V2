@@ -96,13 +96,25 @@ class VGGFaceShapeClassifierWrapper:
     def load_model(self, model_path: str):
         """Load a saved model"""
         try:
+            print(f"🔄 Loading model from: {model_path}")
             checkpoint = torch.load(model_path, map_location=self.device)
+            
+            # Load model state
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.model.eval()
-            print(f"Model loaded from {model_path}")
+            
+            # Get model info if available
+            if 'face_shapes' in checkpoint:
+                self.face_shapes = checkpoint['face_shapes']
+                self.label_dict = {i: shape for i, shape in enumerate(self.face_shapes)}
+            
+            print(f"✅ Trained VGG16 model loaded successfully!")
+            print(f"📋 Face shapes: {self.face_shapes}")
+            print(f"🔧 Device: {self.device}")
+            
         except Exception as e:
-            print(f"Error loading model: {e}")
-            print("Using untrained model")
+            print(f"❌ Error loading model: {e}")
+            print("⚠️  Using untrained model (will give poor results)")
     
     def save_model(self, model_path: str):
         """Save the current model"""
@@ -245,14 +257,22 @@ class FaceClassifier:
     """
     
     def __init__(self):
-        # Initialize the PyTorch-based classifier
+        # Initialize the PyTorch-based classifier with trained model
         models_dir = Path("backend/data/face_shapes/models")
         models_dir.mkdir(parents=True, exist_ok=True)
         
         model_path = models_dir / "face_shape_classifier.pth"
-        self.classifier = VGGFaceShapeClassifierWrapper(
-            model_path=str(model_path) if model_path.exists() else None
-        )
+        
+        # Check if trained model exists
+        if model_path.exists():
+            print(f"🎯 Loading trained VGG16 model from: {model_path}")
+            print(f"📊 Model file size: {model_path.stat().st_size / (1024*1024):.1f} MB")
+            self.classifier = VGGFaceShapeClassifierWrapper(model_path=str(model_path))
+        else:
+            print(f"❌ Trained model not found at: {model_path}")
+            print("🔧 Please train the model first using: python backend/train_model.py")
+            print("⚠️  Using untrained model for now (will give poor results)")
+            self.classifier = VGGFaceShapeClassifierWrapper(model_path=None)
         
         # Map new labels to original format for compatibility
         self.shape_mapping = {

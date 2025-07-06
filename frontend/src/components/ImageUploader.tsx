@@ -9,9 +9,10 @@ interface ImageUploaderProps {
   onAnalysisComplete: (analysis: FaceAnalysisResponse) => void
   isLoading: boolean
   setIsLoading: (loading: boolean) => void
+  profileId?: string
 }
 
-export default function ImageUploader({ onImagesUploaded, onAnalysisComplete, isLoading, setIsLoading }: ImageUploaderProps) {
+export default function ImageUploader({ onImagesUploaded, onAnalysisComplete, isLoading, setIsLoading, profileId }: ImageUploaderProps) {
   const [dragOver, setDragOver] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -56,7 +57,7 @@ export default function ImageUploader({ onImagesUploaded, onAnalysisComplete, is
 
     setIsLoading(true)
     try {
-      const analysis = await apiService.analyzeFace(uploadedFiles)
+      const analysis = await apiService.analyzeFace(uploadedFiles, profileId)
       onAnalysisComplete(analysis)
     } catch (error) {
       console.error('Analysis failed:', error)

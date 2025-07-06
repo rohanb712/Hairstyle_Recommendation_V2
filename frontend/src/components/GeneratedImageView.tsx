@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { apiService } from '@/services/api'
-import { HairstyleResponse, ImageGenerationResponse } from '@/types/api'
+import { HairstyleResponse, ImageGenerationResponse, UserProfile } from '@/types/api'
 
 interface GeneratedImageViewProps {
   hairstyle: HairstyleResponse
   userImages: File[]
+  userProfile?: UserProfile
   onImageGenerated: (imageUrl: string) => void
   generatedImage: string | null
   isLoading: boolean
@@ -16,6 +17,7 @@ interface GeneratedImageViewProps {
 export default function GeneratedImageView({
   hairstyle,
   userImages,
+  userProfile,
   onImageGenerated,
   generatedImage,
   isLoading,
@@ -45,6 +47,7 @@ export default function GeneratedImageView({
       const response = await apiService.generateHairstyleImage({
         user_images: base64Images,
         hairstyle_id: hairstyle.id,
+        gender: userProfile?.gender,
       })
 
       onImageGenerated(response.image_url)

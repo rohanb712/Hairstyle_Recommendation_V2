@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { apiService } from '@/services/api'
-import { HairstyleResponse } from '@/types/api'
+import { HairstyleResponse, UserProfile } from '@/types/api'
 import HairstyleCard from '@/components/HairstyleCard'
 
 interface HairstyleRecommendationsProps {
   faceShape: string
+  userProfile?: UserProfile
   onHairstyleSelected: (hairstyle: HairstyleResponse) => void
   isLoading: boolean
   setIsLoading: (loading: boolean) => void
@@ -14,6 +15,7 @@ interface HairstyleRecommendationsProps {
 
 export default function HairstyleRecommendations({
   faceShape,
+  userProfile,
   onHairstyleSelected,
   isLoading,
   setIsLoading,
@@ -24,7 +26,7 @@ export default function HairstyleRecommendations({
 
   useEffect(() => {
     fetchRecommendations()
-  }, [faceShape])
+  }, [faceShape, userProfile])
 
   const fetchRecommendations = async () => {
     setIsLoading(true)
@@ -33,6 +35,7 @@ export default function HairstyleRecommendations({
     try {
       const recommendations = await apiService.getHairstyleRecommendations({
         face_shape: faceShape,
+        user_profile: userProfile,
       })
       setHairstyles(recommendations)
     } catch (err: any) {
@@ -85,10 +88,16 @@ export default function HairstyleRecommendations({
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Recommended Men's Hairstyles</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Personalized Hairstyle Recommendations</h2>
         <p className="text-gray-600">
-          Based on your <span className="font-semibold text-primary-700">{faceShape}</span> face shape, 
-          here are the best men's hairstyles for you:
+          Based on your <span className="font-semibold text-blue-700">{faceShape}</span> face shape
+          {userProfile && (
+            <>
+              , <span className="font-semibold text-blue-700">{userProfile.hair_texture}</span> hair texture
+              , and your profile preferences
+            </>
+          )}
+          , here are the best hairstyles for you:
         </p>
       </div>
 

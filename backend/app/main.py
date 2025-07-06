@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from typing import List, Dict, Any
 import os
+import uuid
+from datetime import datetime
 from dotenv import load_dotenv
 
 from services.image_processor import ImageProcessor
@@ -10,13 +12,20 @@ from services.face_classifier import FaceClassifier
 from services.hairstyle_recommender import HairstyleRecommender
 from services.image_generator import ImageGenerator
 from models.schemas import (
+    FaceAnalysisRequest,
     FaceAnalysisResponse,
     HairstyleRecommendationRequest,
     GenderBasedRecommendationRequest,
     HairstyleResponse,
     ImageGenerationRequest,
     ImageGenerationResponse,
-    HairstyleStatsResponse
+    HairstyleStatsResponse,
+    UserProfile,
+    UserProfileRequest,
+    UserProfileResponse,
+    EthnicityEnum,
+    HairTextureEnum,
+    GenderEnum
 )
 
 # Load environment variables
@@ -39,10 +48,24 @@ app.add_middleware(
 )
 
 # Initialize services
+print("🚀 Initializing AI Hairstyle Recommender services...")
 image_processor = ImageProcessor()
+print("✅ Image processor initialized")
+
+print("🧠 Initializing face shape classifier...")
 face_classifier = FaceClassifier()
+print("✅ Face classifier initialized")
+
 hairstyle_recommender = HairstyleRecommender()
+print("✅ Hairstyle recommender initialized")
+
 image_generator = ImageGenerator()
+print("✅ Image generator initialized")
+
+print("🎉 All services ready!")
+
+# In-memory storage for user profiles (in production, use a database)
+user_profiles: Dict[str, Dict] = {}
 
 @app.get("/")
 async def root():
@@ -59,10 +82,105 @@ async def root():
         ]
     }
 
+@app.post("/create-profile/", response_model=UserProfileResponse)
+async def create_user_profile(profile_request: UserProfileRequest):
+    """
+    Create a new user profile with demographic and hair information.
+    Returns a profile ID for future reference.
+    """
+    try:
+        # Generate unique profile ID
+        profile_id = str(uuid.uuid4())
+        
+        # Create user profile
+        user_profile = UserProfile(
+            ethnicity=profile_request.ethnicity,
+            age=profile_request.age,
+            gender=profile_request.gender,
+            hair_texture=profile_request.hair_texture
+        )
+        
+        # Store profile with metadata
+        current_time = datetime.now().isoformat()
+        user_profiles[profile_id] = {
+            "profile": user_profile.dict(),
+            "created_at": current_time,
+            "updated_at": current_time
+        }
+        
+        return UserProfileResponse(
+            profile_id=profile_id,
+            user_profile=user_profile,
+            created_at=current_time,
+            updated_at=current_time
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/profile/{profile_id}", response_model=UserProfileResponse)
+async def get_user_profile(profile_id: str):
+    """
+    Retrieve a user profile by ID.
+    """
+    try:
+        if profile_id not in user_profiles:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        
+        profile_data = user_profiles[profile_id]
+        
+        return UserProfileResponse(
+            profile_id=profile_id,
+            user_profile=UserProfile(**profile_data["profile"]),
+            created_at=profile_data["created_at"],
+            updated_at=profile_data["updated_at"]
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/profile/{profile_id}", response_model=UserProfileResponse)
+async def update_user_profile(profile_id: str, profile_request: UserProfileRequest):
+    """
+    Update an existing user profile.
+    """
+    try:
+        if profile_id not in user_profiles:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        
+        # Update user profile
+        user_profile = UserProfile(
+            ethnicity=profile_request.ethnicity,
+            age=profile_request.age,
+            gender=profile_request.gender,
+            hair_texture=profile_request.hair_texture,
+            face_shape=user_profiles[profile_id]["profile"].get("face_shape")  # Keep existing face shape
+        )
+        
+        # Update stored profile
+        current_time = datetime.now().isoformat()
+        user_profiles[profile_id]["profile"] = user_profile.dict()
+        user_profiles[profile_id]["updated_at"] = current_time
+        
+        return UserProfileResponse(
+            profile_id=profile_id,
+            user_profile=user_profile,
+            created_at=user_profiles[profile_id]["created_at"],
+            updated_at=current_time
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/analyze-face/", response_model=FaceAnalysisResponse)
-async def analyze_face(files: List[UploadFile] = File(...)):
+async def analyze_face(files: List[UploadFile] = File(...), profile_id: Optional[str] = None):
     """
     Analyze faces in uploaded images and classify face shape using VGG16 model.
+    Optionally associate with a user profile.
     Returns detected facial landmarks and classified face shape with confidence.
     
     Supports face shapes: oval, round, square, heart, long
@@ -86,10 +204,22 @@ async def analyze_face(files: List[UploadFile] = File(...)):
         # Classify face shape using VGG model
         face_shape, confidence = await face_classifier.classify_face(aligned_face)
         
+        # Get user profile if provided
+        user_profile = None
+        if profile_id and profile_id in user_profiles:
+            profile_data = user_profiles[profile_id]
+            user_profile = UserProfile(**profile_data["profile"])
+            
+            # Update profile with detected face shape
+            user_profile.face_shape = face_shape
+            user_profiles[profile_id]["profile"]["face_shape"] = face_shape
+            user_profiles[profile_id]["updated_at"] = datetime.now().isoformat()
+        
         return FaceAnalysisResponse(
             landmarks=landmarks,
             face_shape=face_shape,
-            confidence=confidence
+            confidence=confidence,
+            user_profile=user_profile
         )
     
     except Exception as e:
@@ -214,6 +344,36 @@ async def get_available_genders():
     """Get list of all supported genders for hairstyle filtering"""
     return {
         "genders": hairstyle_recommender.get_available_genders()
+    }
+
+@app.get("/profile-options/")
+async def get_profile_options():
+    """Get all available options for user profile creation"""
+    return {
+        "ethnicities": [e.value for e in EthnicityEnum],
+        "hair_textures": [t.value for t in HairTextureEnum],
+        "genders": [g.value for g in GenderEnum],
+        "age_range": {"min": 13, "max": 100}
+    }
+
+@app.get("/ethnicities/")
+async def get_available_ethnicities():
+    """Get list of all supported ethnicities"""
+    return {
+        "ethnicities": [
+            {"value": e.value, "label": e.value.replace("_", " ").title()}
+            for e in EthnicityEnum
+        ]
+    }
+
+@app.get("/hair-textures/")
+async def get_available_hair_textures():
+    """Get list of all supported hair textures"""
+    return {
+        "hair_textures": [
+            {"value": t.value, "label": t.value.title()}
+            for t in HairTextureEnum
+        ]
     }
 
 if __name__ == "__main__":
