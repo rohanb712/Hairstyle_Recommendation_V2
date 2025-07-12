@@ -123,3 +123,16 @@ temp_images/
 # API keys and secrets
 secrets.json
 config.json 
+
+# Training data images (keep locally but not in git)
+backend/data/face_shapes/raw_backup_simple/
+
+# Test and development files (keep locally but not in git)
+test_*.py
+start-dev.bat
+*_test.py
+*_tests.py
+
+# Additional documentation files (keep locally but not in git)
+*README.md
+!README.md 
