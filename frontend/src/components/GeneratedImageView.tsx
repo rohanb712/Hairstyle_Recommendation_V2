@@ -158,7 +158,7 @@ export default function GeneratedImageView({
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <span>Generate AI Preview</span>
+            <span>Try This Hairstyle On Me</span>
           </button>
         )}
 
@@ -166,8 +166,8 @@ export default function GeneratedImageView({
           <div className="space-y-4">
             <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto"></div>
             <div className="space-y-2">
-              <p className="text-lg font-medium text-gray-800">Creating Your New Look</p>
-              <p className="text-gray-600">AI is processing your photo with the selected men's hairstyle...</p>
+              <p className="text-lg font-medium text-gray-800">Creating Your Virtual Try-On</p>
+              <p className="text-gray-600">AI is generating a personalized image of you with the selected hairstyle...</p>
             </div>
           </div>
         )}
@@ -234,11 +234,11 @@ export default function GeneratedImageView({
 
             {/* Results Description */}
             <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 max-w-2xl mx-auto">
-              <h4 className="font-semibold text-primary-800 mb-2">How does it look?</h4>
+              <h4 className="font-semibold text-primary-800 mb-2">Your Virtual Try-On Result</h4>
               <p className="text-primary-700 text-sm">
-                This AI-generated preview shows how <strong>{hairstyle.name}</strong> would complement your facial features. 
-                The style is particularly suited for {hairstyle.suitable_face_shapes.join(', ').toLowerCase()} face shapes 
-                and offers a modern, masculine appearance.
+                This AI-generated image shows how <strong>{hairstyle.name}</strong> would look on you specifically. 
+                The style is particularly suited for {hairstyle.suitable_face_shapes.join(', ').toLowerCase()} face shapes. 
+                The AI has preserved your facial features while applying the new hairstyle.
               </p>
             </div>
           </div>

@@ -440,12 +440,24 @@ async def generate_hairstyle_image(request: ImageGenerationRequest):
                 detail=f"Hairstyle not found: {request.hairstyle_id}"
             )
         
-        # Generate image with enhanced prompt including gender
-        generated_image_url = await image_generator.generate_image(
-            user_images=request.user_images,
-            hairstyle=hairstyle,
-            gender=request.gender
-        )
+        # Generate image using LLM-based approach for virtual try-on
+        if use_llm_recommendations and llm_hairstyle_recommender:
+            # Use user image for virtual try-on if available
+            user_image_base64 = None
+            if request.user_images and len(request.user_images) > 0:
+                user_image_base64 = request.user_images[0]  # Use first image
+            
+            generated_image_url = await llm_hairstyle_recommender.generate_hairstyle_image(
+                prompt=hairstyle.generation_prompt_modifier,
+                user_image_base64=user_image_base64
+            )
+        else:
+            # Fallback to traditional image generator
+            generated_image_url = await image_generator.generate_image(
+                user_images=request.user_images,
+                hairstyle=hairstyle,
+                gender=request.gender
+            )
         
         return ImageGenerationResponse(
             image_url=generated_image_url,
