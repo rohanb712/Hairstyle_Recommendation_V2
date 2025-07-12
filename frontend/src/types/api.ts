@@ -1,5 +1,5 @@
 // User Profile Types
-export type EthnicityType = 'african' | 'asian' | 'caucasian' | 'hispanic' | 'middle_eastern' | 'native_american' | 'pacific_islander' | 'mixed' | 'other'
+export type EthnicityType = 'african' | 'asian' | 'caucasian' | 'hispanic' | 'middle_eastern' | 'native_american' | 'pacific_islander' | 'south_asian' | 'mixed' | 'other'
 export type HairTextureType = 'straight' | 'wavy' | 'curly' | 'coily'
 export type GenderType = 'male' | 'female' | 'non_binary'
 

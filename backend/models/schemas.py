@@ -11,6 +11,7 @@ class EthnicityEnum(str, Enum):
     MIDDLE_EASTERN = "middle_eastern"
     NATIVE_AMERICAN = "native_american"
     PACIFIC_ISLANDER = "pacific_islander"
+    SOUTH_ASIAN = "south_asian"
     MIXED = "mixed"
     OTHER = "other"
 

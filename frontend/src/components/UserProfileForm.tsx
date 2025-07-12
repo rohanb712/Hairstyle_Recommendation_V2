@@ -44,6 +44,7 @@ export default function UserProfileForm({
       'middle_eastern',
       'native_american',
       'pacific_islander',
+      'south_asian',
       'mixed',
       'other',
     ],
@@ -139,6 +140,7 @@ export default function UserProfileForm({
     middle_eastern: 'Middle Eastern',
     native_american: 'Native American',
     pacific_islander: 'Pacific Islander',
+    south_asian: 'South Asian',
     mixed: 'Mixed/Multiracial',
     other: 'Other',
   }
