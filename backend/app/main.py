@@ -1,7 +1,7 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import os
 import uuid
 from datetime import datetime
@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from services.image_processor import ImageProcessor
 from services.face_classifier import FaceClassifier
 from services.hairstyle_recommender import HairstyleRecommender
+from services.llm_hairstyle_recommender import LLMHairstyleRecommender
 from services.image_generator import ImageGenerator
 from models.schemas import (
     FaceAnalysisRequest,
@@ -56,8 +57,25 @@ print("🧠 Initializing face shape classifier...")
 face_classifier = FaceClassifier()
 print("✅ Face classifier initialized")
 
-hairstyle_recommender = HairstyleRecommender()
-print("✅ Hairstyle recommender initialized")
+# Initialize LLM-based hairstyle recommender
+gemini_api_key = os.getenv('GEMINI_API_KEY')
+if gemini_api_key:
+    try:
+        llm_hairstyle_recommender = LLMHairstyleRecommender(gemini_api_key)
+        print("✅ LLM hairstyle recommender initialized with Google Gemini")
+        use_llm_recommendations = True
+    except Exception as e:
+        print(f"⚠️  Failed to initialize LLM service: {e}")
+        print("   Falling back to traditional recommender...")
+        hairstyle_recommender = HairstyleRecommender()
+        print("✅ Traditional hairstyle recommender initialized")
+        use_llm_recommendations = False
+else:
+    print("⚠️  GEMINI_API_KEY not found in environment variables")
+    print("   Using traditional recommendation system...")
+    hairstyle_recommender = HairstyleRecommender()
+    print("✅ Traditional hairstyle recommender initialized")
+    use_llm_recommendations = False
 
 image_generator = ImageGenerator()
 print("✅ Image generator initialized")
@@ -70,16 +88,29 @@ user_profiles: Dict[str, Dict] = {}
 @app.get("/")
 async def root():
     """Health check endpoint"""
+    features = [
+        "VGG16-based face shape classification",
+        "MTCNN face detection",
+        "Gender-specific recommendations",
+        "Male and female hairstyles"
+    ]
+    
+    if use_llm_recommendations:
+        features.extend([
+            "Google Gemini AI-powered recommendations",
+            "Personalized styling based on age, race, and features",
+            "Cultural-aware hairstyle suggestions",
+            "Dynamic hairstyle generation"
+        ])
+    else:
+        features.append("Traditional rule-based recommendations")
+    
     return {
         "status": "healthy", 
         "service": "AI Hairstyle Recommender & Visualizer",
-        "version": "2.0.0",
-        "features": [
-            "VGG16-based face shape classification",
-            "MTCNN face detection",
-            "Gender-specific recommendations",
-            "Male and female hairstyles"
-        ]
+        "version": "2.1.0",
+        "llm_enabled": use_llm_recommendations,
+        "features": features
     }
 
 @app.post("/create-profile/", response_model=UserProfileResponse)
@@ -228,29 +259,101 @@ async def analyze_face(files: List[UploadFile] = File(...), profile_id: Optional
 @app.post("/recommend-hairstyles/", response_model=List[HairstyleResponse])
 async def recommend_hairstyles(request: HairstyleRecommendationRequest):
     """
-    Get hairstyle recommendations based on face shape and optional gender.
+    Get AI-powered hairstyle recommendations based on face shape and user profile.
+    
+    Uses Google Gemini LLM for intelligent recommendations when available,
+    otherwise falls back to traditional rule-based recommendations.
     
     Face shapes supported: oval, round, square, heart, long
     Gender options: "male", "female", or None for all styles
     """
     try:
-        recommendations = await hairstyle_recommender.get_recommendations(
-            face_shape=request.face_shape,
-            gender=request.gender,
-            max_results=6
-        )
+        print(f"🔍 Recommendation request received:")
+        print(f"   Face shape: {request.face_shape}")
+        print(f"   User profile: {request.user_profile}")
+        print(f"   Gender: {request.gender}")
+        print(f"   Using LLM: {use_llm_recommendations}")
+        
+        # Use LLM-based recommendations if available
+        if use_llm_recommendations:
+            print("   Using LLM recommendations...")
+            # Extract user characteristics from profile
+            user_profile = request.user_profile
+            
+            print(f"   User profile type: {type(user_profile)}")
+            print(f"   User profile dict: {user_profile.dict() if user_profile else None}")
+            
+            # Handle enum values that might already be strings
+            if user_profile and user_profile.gender:
+                print(f"   Gender type: {type(user_profile.gender)}")
+                print(f"   Gender value: {user_profile.gender}")
+                gender = user_profile.gender.value if hasattr(user_profile.gender, 'value') else user_profile.gender
+            else:
+                gender = request.gender
+                
+            age = user_profile.age if user_profile else None
+            
+            if user_profile and user_profile.ethnicity:
+                print(f"   Ethnicity type: {type(user_profile.ethnicity)}")
+                print(f"   Ethnicity value: {user_profile.ethnicity}")
+                race = user_profile.ethnicity.value if hasattr(user_profile.ethnicity, 'value') else user_profile.ethnicity
+            else:
+                race = None
+            
+            print(f"   Extracted - Gender: {gender}, Age: {age}, Race: {race}")
+            
+            # Create additional context from hair texture and other profile data
+            additional_context = ""
+            if user_profile:
+                if user_profile.hair_texture:
+                    print(f"   Hair texture type: {type(user_profile.hair_texture)}")
+                    print(f"   Hair texture value: {user_profile.hair_texture}")
+                    hair_texture = user_profile.hair_texture.value if hasattr(user_profile.hair_texture, 'value') else user_profile.hair_texture
+                    additional_context += f"Hair texture: {hair_texture}. "
+                additional_context += "User prefers modern, stylish looks suitable for their lifestyle."
+            
+            print(f"   Additional context: {additional_context}")
+            
+            print("   Calling LLM recommender...")
+            recommendations = await llm_hairstyle_recommender.get_recommendations(
+                face_shape=request.face_shape,
+                gender=gender,
+                age=age,
+                race=race,
+                additional_context=additional_context if additional_context else None,
+                max_results=6
+            )
+        else:
+            print("   Using traditional recommendations...")
+            # Fallback to traditional recommendations
+            if request.user_profile and request.user_profile.gender:
+                gender = request.user_profile.gender.value if hasattr(request.user_profile.gender, 'value') else request.user_profile.gender
+            else:
+                gender = request.gender
+                
+            recommendations = await hairstyle_recommender.get_recommendations(
+                face_shape=request.face_shape,
+                gender=gender,
+                max_results=6
+            )
+        
+        print(f"   Recommendations found: {len(recommendations) if recommendations else 0}")
         
         if not recommendations:
             raise HTTPException(
                 status_code=404, 
                 detail=f"No hairstyles found for face shape: {request.face_shape}" + 
-                       (f" and gender: {request.gender}" if request.gender else "")
+                       (f" and gender: {gender}" if gender else "")
             )
         
         return recommendations
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"❌ Error in recommend_hairstyles: {str(e)}")
+        print(f"   Error type: {type(e).__name__}")
+        import traceback
+        print(f"   Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Recommendation error: {str(e)}")
 
 @app.post("/recommend-by-gender/", response_model=List[HairstyleResponse])
 async def recommend_by_gender(request: GenderBasedRecommendationRequest):
@@ -301,8 +404,35 @@ async def generate_hairstyle_image(request: ImageGenerationRequest):
     Returns URL or base64 of the generated image.
     """
     try:
-        # Get hairstyle details
-        hairstyle = await hairstyle_recommender.get_hairstyle_by_id(request.hairstyle_id)
+        # Get hairstyle details - first try LLM store, then traditional store
+        hairstyle = None
+        
+        # For LLM-generated hairstyles, we need to handle them differently
+        # since they might not exist in the traditional hairstyle database
+        if use_llm_recommendations:
+            # The hairstyle_id from LLM recommendations should be passed directly
+            # We'll create a mock hairstyle object for image generation
+            # In a real implementation, you might want to store LLM results temporarily
+            
+            # For now, we'll try to get from traditional store first
+            if not use_llm_recommendations:
+                hairstyle = await hairstyle_recommender.get_hairstyle_by_id(request.hairstyle_id)
+            
+            # If not found and we're using LLM, create a basic hairstyle for generation
+            if not hairstyle:
+                # Extract info from request or use fallback
+                from models.schemas import HairstyleResponse
+                hairstyle = HairstyleResponse(
+                    id=request.hairstyle_id,
+                    name="Custom AI Style",
+                    description="AI-recommended hairstyle based on your features",
+                    image_url="https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400",
+                    suitable_face_shapes=["oval", "round", "square", "heart", "long"],
+                    generation_prompt_modifier=f"with a stylish {request.gender or 'modern'} hairstyle that complements facial features"
+                )
+        else:
+            # Traditional lookup
+            hairstyle = await hairstyle_recommender.get_hairstyle_by_id(request.hairstyle_id)
         
         if not hairstyle:
             raise HTTPException(

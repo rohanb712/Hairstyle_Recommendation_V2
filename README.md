@@ -1,8 +1,15 @@
 # 🎯 AI Men's Hairstyle Recommender & Visualizer
 
-A sophisticated full-stack web application that uses AI to analyze facial features and recommend the perfect men's hairstyles with virtual try-on capabilities.
+A sophisticated full-stack web application that uses AI to analyze facial features and recommend the perfect men's hairstyles with virtual try-on capabilities. **Now powered by Google Gemini LLM for intelligent, personalized recommendations!**
 
 ## ✨ Features
+
+### 🤖 **NEW: AI-Powered Intelligent Recommendations**
+- **Google Gemini LLM Integration** - Advanced AI-powered hairstyle recommendations
+- **Personalized Analysis** - Considers age, race, gender, face shape, and hair texture
+- **Cultural Awareness** - Culturally appropriate and authentic styling suggestions
+- **Dynamic Generation** - Creates custom hairstyle recommendations in real-time
+- **Smart Fallback** - Automatically falls back to rule-based system if LLM unavailable
 
 ### 🔍 **Intelligent Face Analysis**
 - Advanced facial landmark detection using OpenCV
@@ -11,6 +18,7 @@ A sophisticated full-stack web application that uses AI to analyze facial featur
 - High-accuracy face shape determination (Oval, Round, Square, Heart, Long, Diamond)
 
 ### 💼 **Men's Hairstyle Recommendations**
+- **LLM-Generated Recommendations** - Personalized suggestions based on multiple factors
 - Curated database of popular men's hairstyles (fade, undercut, pompadour, crew cut, etc.)
 - Face shape-based intelligent recommendations
 - Professional and modern styling options
@@ -32,6 +40,8 @@ A sophisticated full-stack web application that uses AI to analyze facial featur
 
 ### Backend (Python)
 - **FastAPI** - High-performance web framework
+- **Google Gemini LLM** - Advanced AI recommendations via LangChain
+- **LangChain** - LLM integration framework
 - **OpenCV** - Computer vision and facial analysis
 - **PyTorch** - Deep learning for face classification
 - **Pydantic** - Data validation and serialization
@@ -44,6 +54,7 @@ A sophisticated full-stack web application that uses AI to analyze facial featur
 - **React Hooks** - Modern state management
 
 ### AI Integration
+- **Google Gemini Pro** - Intelligent hairstyle recommendations
 - **Stability AI** - Professional image generation
 - **OpenAI DALL-E** - Alternative AI image generation
 - **Custom CNN** - Face shape classification model
@@ -54,6 +65,7 @@ A sophisticated full-stack web application that uses AI to analyze facial featur
 - **Node.js** 18+ and npm
 - **Python** 3.8+
 - **Git** for version control
+- **Google Gemini API Key** (for AI recommendations)
 
 ### 1. Clone the Repository
 ```bash
@@ -73,15 +85,31 @@ venv\Scripts\activate
 source venv/bin/activate
 
 # Install Python dependencies
-pip install -r requirements.txt
-
-# Set environment variables (optional)
-# Create .env file in backend/ directory:
-STABILITY_AI_API_KEY=your_key_here
-OPENAI_API_KEY=your_key_here
+pip install -r backend/requirements.txt
 ```
 
-### 3. Set Up Frontend
+### 3. Configure API Keys
+Create a `.env` file in the `backend/` directory:
+
+```bash
+# Required for AI-powered recommendations
+GEMINI_API_KEY=your_google_gemini_api_key_here
+
+# Optional for image generation
+STABILITY_AI_API_KEY=your_stability_ai_key_here
+OPENAI_API_KEY=your_openai_key_here
+
+# Development settings
+DEBUG=True
+```
+
+**Getting Google Gemini API Key:**
+1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Sign in with your Google account
+3. Create a new API key
+4. Copy the key to your `.env` file
+
+### 4. Set Up Frontend
 ```bash
 cd frontend
 npm install
@@ -90,12 +118,15 @@ npm install
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-### 4. Run the Application
+### 5. Run the Application
 
 **Terminal 1 - Backend:**
 ```bash
-# From project root
-export PYTHONPATH=. && python app/main.py
+# From backend directory
+# On Windows:
+set GEMINI_API_KEY=your_key_here && python app/main.py
+# On macOS/Linux:
+export GEMINI_API_KEY=your_key_here && python app/main.py
 # Backend runs on http://localhost:8000
 ```
 
@@ -106,80 +137,145 @@ npm run dev
 # Frontend runs on http://localhost:3000
 ```
 
-### 5. Access the App
+### 6. Access the App
 Open your browser and navigate to `http://localhost:3000`
+
+## 🧪 Testing the LLM Integration
+
+To verify the AI integration is working:
+
+```bash
+# From backend directory
+python test_api.py
+```
+
+This will test:
+- Server health and LLM status
+- AI-powered recommendation generation
+- API endpoint functionality
 
 ## 📱 How It Works
 
-### Step 1: Upload Photo
+### Step 1: Create Profile (Enhanced)
+- Enter demographic information (age, ethnicity, gender)
+- Specify hair texture preferences
+- AI uses this data for personalized recommendations
+
+### Step 2: Upload Photo
 - Drag & drop or select a clear front-facing photo
 - Supports JPG, PNG, WebP formats
 - Automatic image validation and processing
 
-### Step 2: Face Analysis
+### Step 3: Face Analysis
 - AI detects facial landmarks and features
 - Determines face shape with confidence scoring
 - Visualizes detected points on your photo
 
-### Step 3: Style Recommendations
-- Shows men's hairstyles suited to your face shape
-- Browse options like fades, undercuts, pompadours
-- Select your preferred style for virtual try-on
+### Step 4: AI Recommendations (NEW)
+- **Google Gemini analyzes your complete profile**
+- Considers face shape, age, ethnicity, and preferences
+- Generates culturally-aware, personalized suggestions
+- Shows 6 diverse, AI-curated hairstyles
 
-### Step 4: Virtual Try-On
+### Step 5: Virtual Try-On
 - AI generates realistic preview of chosen hairstyle
 - Download or share your new look
 - Try multiple styles with easy regeneration
 
-## 🎨 Men's Hairstyle Collection
+## 🎨 AI-Generated Hairstyle Recommendations
 
-Our curated selection includes:
+The Gemini LLM considers:
 
-- **Classic Fade** - Timeless professional cut
-- **Modern Undercut** - Bold and edgy styling
-- **Crew Cut** - Military-inspired practicality
-- **Pompadour** - Sophisticated retro style
-- **Buzz Cut** - Ultra-low maintenance
-- **Quiff** - Textured modern volume
-- **Side Part** - Traditional gentleman's cut
-- **Textured Crop** - Casual contemporary style
-- **Slicked Back** - Formal business look
-- **Caesar Cut** - Forward-styled classic
+- **Face Shape** - Oval, round, square, heart, long proportions
+- **Age** - Age-appropriate styling suggestions
+- **Ethnicity** - Culturally authentic and appropriate styles
+- **Hair Texture** - Straight, wavy, curly, coily compatibility
+- **Lifestyle** - Professional, casual, trendy preferences
+- **Maintenance** - Low to high-maintenance options
+
+Sample AI-generated styles include:
+- **Professional Fade Variations** - Tailored to face shape
+- **Cultural Authenticity** - Styles respecting heritage
+- **Age-Appropriate Trends** - Modern but suitable
+- **Texture-Specific Cuts** - Optimized for hair type
+- **Lifestyle Matching** - Professional vs. casual options
 
 ## 🔧 Configuration
 
-### AI Service Setup (Optional)
-The app works without API keys using fallback modes:
+### LLM Prompt Customization
+Modify the prompt template in `backend/services/llm_hairstyle_recommender.py`:
 
-**Stability AI:**
-```bash
-export STABILITY_AI_API_KEY=your_key_here
+```python
+def _setup_prompt_template(self):
+    # Customize the prompt for different recommendation styles
+    template = """You are a professional hairstylist AI assistant..."""
 ```
 
-**OpenAI:**
-```bash
-export OPENAI_API_KEY=your_key_here
-```
+### Fallback Behavior
+The system automatically:
+- Uses traditional recommendations if Gemini API is unavailable
+- Provides graceful degradation of service
+- Logs LLM status in health check endpoint
 
-### Customization
-- Modify `backend/data/hairstyles.json` to add new men's styles
-- Update color scheme in `frontend/tailwind.config.ts`
-- Adjust AI prompts in service files
+### Traditional Mode
+To disable LLM and use rule-based recommendations:
+- Remove or comment out `GEMINI_API_KEY` in `.env`
+- The system will automatically use the traditional recommender
 
 ## 📝 API Endpoints
 
-- `POST /analyze-face/` - Facial analysis and landmarks
-- `POST /recommend-hairstyles/` - Get style recommendations
+### Enhanced Endpoints
+- `GET /` - Health check with LLM status
+- `POST /recommend-hairstyles/` - AI-powered or traditional recommendations
+- `POST /analyze-face/` - Facial analysis with profile integration
 - `POST /generate-hairstyle-image/` - AI image generation
-- `GET /` - Health check
+- `POST /create-profile/` - User profile management
+
+### New Response Format
+```json
+{
+  "status": "healthy",
+  "service": "AI Hairstyle Recommender & Visualizer", 
+  "version": "2.1.0",
+  "llm_enabled": true,
+  "features": [
+    "Google Gemini AI-powered recommendations",
+    "Personalized styling based on age, race, and features",
+    "Cultural-aware hairstyle suggestions",
+    "Dynamic hairstyle generation"
+  ]
+}
+```
+
+## 🎯 System Architecture
+
+```
+Frontend (Next.js) 
+    ↓ API Calls
+Backend (FastAPI)
+    ↓ Face Analysis
+Face Classifier (VGG16)
+    ↓ User Profile
+LLM Service (Google Gemini)
+    ↓ Recommendations
+Image Generator (Stability AI/OpenAI)
+```
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Test with both LLM and traditional modes
+4. Commit your changes (`git commit -m 'Add amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request
+
+## 🔒 Privacy & Security
+
+- API keys stored securely in environment variables
+- User profiles stored temporarily (consider database for production)
+- Face images processed locally, not stored permanently
+- Google Gemini API calls follow Google's privacy policies
 
 ## 📄 License
 
@@ -187,11 +283,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
+- Google for the Gemini LLM API and AI capabilities
+- LangChain for seamless LLM integration
 - OpenCV community for computer vision tools
 - Stability AI and OpenAI for image generation capabilities
 - Men's grooming and styling communities for hairstyle insights
-- Modern web development ecosystem (Next.js, FastAPI, Tailwind)
 
 ---
 
-**Ready to find your perfect men's hairstyle? Start your transformation at `http://localhost:3000`** 🎯✂️ 
+**Ready to experience AI-powered hairstyle recommendations? Start your transformation at `http://localhost:3000`** 🤖✂️
+
+### 🚀 New in v2.1.0
+- Google Gemini LLM integration for intelligent recommendations
+- Personalized analysis based on age, race, and preferences
+- Cultural awareness in hairstyle suggestions
+- Dynamic AI-generated hairstyle options
+- Enhanced user profiling system
+- Graceful fallback to traditional recommendations 
