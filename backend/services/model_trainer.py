@@ -137,7 +137,6 @@ class FaceShapeTrainer:
                         img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
                         
                         if img is None:
-                            print(f"Failed to decode {img_path.name}")
                             continue
                         
                         # Extract face using MTCNN (same as in the notebooks)
@@ -152,10 +151,9 @@ class FaceShapeTrainer:
                         loaded_count += 1
                         
                     except Exception as e:
-                        print(f"Error loading {img_path.name}: {e}")
                         continue
                 
-                print(f"  Successfully loaded: {loaded_count}/{len(image_files)} images")
+                print(f"  Loaded: {loaded_count}/{len(image_files)} images")
         
         # Load test data
         test_dir = self.raw_dir / "test"
@@ -183,7 +181,6 @@ class FaceShapeTrainer:
                         img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
                         
                         if img is None:
-                            print(f"Failed to decode {img_path.name}")
                             continue
                         
                         # Extract face using MTCNN (same as in the notebooks)
@@ -198,10 +195,9 @@ class FaceShapeTrainer:
                         loaded_count += 1
                         
                     except Exception as e:
-                        print(f"Error loading {img_path.name}: {e}")
                         continue
                 
-                print(f"  Successfully loaded: {loaded_count}/{len(image_files)} images")
+                print(f"  Loaded: {loaded_count}/{len(image_files)} images")
         
         # Convert to numpy arrays
         X_train = np.array(train_images)
@@ -478,9 +474,8 @@ class FaceShapeTrainer:
         """
         Run the complete training pipeline
         """
-        print("="*60)
-        print("STARTING COMPLETE TRAINING PIPELINE")
-        print("="*60)
+        print("Starting complete training pipeline")
+        print("="*40)
         
         try:
             # Load data

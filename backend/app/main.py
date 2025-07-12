@@ -49,38 +49,38 @@ app.add_middleware(
 )
 
 # Initialize services
-print("🚀 Initializing AI Hairstyle Recommender services...")
+print("Initializing AI Hairstyle Recommender services...")
 image_processor = ImageProcessor()
-print("✅ Image processor initialized")
+print("Image processor initialized")
 
-print("🧠 Initializing face shape classifier...")
+print("Initializing face shape classifier...")
 face_classifier = FaceClassifier()
-print("✅ Face classifier initialized")
+print("Face classifier initialized")
 
 # Initialize LLM-based hairstyle recommender
 gemini_api_key = os.getenv('GEMINI_API_KEY')
 if gemini_api_key:
     try:
         llm_hairstyle_recommender = LLMHairstyleRecommender(gemini_api_key)
-        print("✅ LLM hairstyle recommender initialized with Google Gemini")
+        print("LLM hairstyle recommender initialized with Google Gemini")
         use_llm_recommendations = True
     except Exception as e:
-        print(f"⚠️  Failed to initialize LLM service: {e}")
-        print("   Falling back to traditional recommender...")
+        print(f"Failed to initialize LLM service: {e}")
+        print("Falling back to traditional recommender...")
         hairstyle_recommender = HairstyleRecommender()
-        print("✅ Traditional hairstyle recommender initialized")
+        print("Traditional hairstyle recommender initialized")
         use_llm_recommendations = False
 else:
-    print("⚠️  GEMINI_API_KEY not found in environment variables")
-    print("   Using traditional recommendation system...")
+    print("GEMINI_API_KEY not found in environment variables")
+    print("Using traditional recommendation system...")
     hairstyle_recommender = HairstyleRecommender()
-    print("✅ Traditional hairstyle recommender initialized")
+    print("Traditional hairstyle recommender initialized")
     use_llm_recommendations = False
 
 image_generator = ImageGenerator()
-print("✅ Image generator initialized")
+print("Image generator initialized")
 
-print("🎉 All services ready!")
+print("All services ready!")
 
 # In-memory storage for user profiles (in production, use a database)
 user_profiles: Dict[str, Dict] = {}
@@ -268,25 +268,15 @@ async def recommend_hairstyles(request: HairstyleRecommendationRequest):
     Gender options: "male", "female", or None for all styles
     """
     try:
-        print(f"🔍 Recommendation request received:")
-        print(f"   Face shape: {request.face_shape}")
-        print(f"   User profile: {request.user_profile}")
-        print(f"   Gender: {request.gender}")
-        print(f"   Using LLM: {use_llm_recommendations}")
+        print(f"Recommendation request - Face shape: {request.face_shape}, Gender: {request.gender}")
         
         # Use LLM-based recommendations if available
         if use_llm_recommendations:
-            print("   Using LLM recommendations...")
             # Extract user characteristics from profile
             user_profile = request.user_profile
             
-            print(f"   User profile type: {type(user_profile)}")
-            print(f"   User profile dict: {user_profile.dict() if user_profile else None}")
-            
             # Handle enum values that might already be strings
             if user_profile and user_profile.gender:
-                print(f"   Gender type: {type(user_profile.gender)}")
-                print(f"   Gender value: {user_profile.gender}")
                 gender = user_profile.gender.value if hasattr(user_profile.gender, 'value') else user_profile.gender
             else:
                 gender = request.gender
@@ -294,27 +284,18 @@ async def recommend_hairstyles(request: HairstyleRecommendationRequest):
             age = user_profile.age if user_profile else None
             
             if user_profile and user_profile.ethnicity:
-                print(f"   Ethnicity type: {type(user_profile.ethnicity)}")
-                print(f"   Ethnicity value: {user_profile.ethnicity}")
                 race = user_profile.ethnicity.value if hasattr(user_profile.ethnicity, 'value') else user_profile.ethnicity
             else:
                 race = None
-            
-            print(f"   Extracted - Gender: {gender}, Age: {age}, Race: {race}")
             
             # Create additional context from hair texture and other profile data
             additional_context = ""
             if user_profile:
                 if user_profile.hair_texture:
-                    print(f"   Hair texture type: {type(user_profile.hair_texture)}")
-                    print(f"   Hair texture value: {user_profile.hair_texture}")
                     hair_texture = user_profile.hair_texture.value if hasattr(user_profile.hair_texture, 'value') else user_profile.hair_texture
                     additional_context += f"Hair texture: {hair_texture}. "
                 additional_context += "User prefers modern, stylish looks suitable for their lifestyle."
             
-            print(f"   Additional context: {additional_context}")
-            
-            print("   Calling LLM recommender...")
             recommendations = await llm_hairstyle_recommender.get_recommendations(
                 face_shape=request.face_shape,
                 gender=gender,
@@ -324,7 +305,6 @@ async def recommend_hairstyles(request: HairstyleRecommendationRequest):
                 max_results=6
             )
         else:
-            print("   Using traditional recommendations...")
             # Fallback to traditional recommendations
             if request.user_profile and request.user_profile.gender:
                 gender = request.user_profile.gender.value if hasattr(request.user_profile.gender, 'value') else request.user_profile.gender
@@ -337,8 +317,6 @@ async def recommend_hairstyles(request: HairstyleRecommendationRequest):
                 max_results=6
             )
         
-        print(f"   Recommendations found: {len(recommendations) if recommendations else 0}")
-        
         if not recommendations:
             raise HTTPException(
                 status_code=404, 
@@ -349,10 +327,7 @@ async def recommend_hairstyles(request: HairstyleRecommendationRequest):
         return recommendations
     
     except Exception as e:
-        print(f"❌ Error in recommend_hairstyles: {str(e)}")
-        print(f"   Error type: {type(e).__name__}")
-        import traceback
-        print(f"   Traceback: {traceback.format_exc()}")
+        print(f"Error in recommend_hairstyles: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Recommendation error: {str(e)}")
 
 @app.post("/recommend-by-gender/", response_model=List[HairstyleResponse])

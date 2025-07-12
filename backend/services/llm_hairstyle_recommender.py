@@ -185,7 +185,7 @@ Generate the JSON response now:"""
                 ))
             
             # Generate images for each recommendation
-            print(f"   Generating images for {len(recommendations)} hairstyles...")
+            print(f"Generating images for {len(recommendations)} hairstyles...")
             for i, recommendation in enumerate(recommendations):
                 try:
                     # Use the generation_prompt_modifier to generate the image
@@ -193,11 +193,11 @@ Generate the JSON response now:"""
                     image_url = await self.generate_hairstyle_image(recommendation.generation_prompt_modifier, user_image_base64=None)
                     if image_url:
                         recommendation.image_url = image_url
-                        print(f"   ✅ Generated image for: {recommendation.name}")
+                        print(f"Generated image for: {recommendation.name}")
                     else:
-                        print(f"   ⚠️  Failed to generate image for: {recommendation.name}")
+                        print(f"Failed to generate image for: {recommendation.name}")
                 except Exception as e:
-                    print(f"   ❌ Error generating image for {recommendation.name}: {e}")
+                    print(f"Error generating image for {recommendation.name}: {e}")
             
             return recommendations
             
